@@ -1,0 +1,261 @@
+//Values and strings inside quotes can be changed here. 
+ 
+const string SOURCE_AMMO 		= "[Source Ammo]"; 
+const string SOURCE_COMPONENT 	= "[Source Component]"; 
+ 
+const string AMMO = "NATO_25x184mm"; 
+const string MISL = "Missile200mm"; 
+ 
+ 
+const string Construction 		= "Construction"; 
+const string MetalGrid 			= "MetalGrid"; 
+const string InteriorPlate 		= "InteriorPlate"; 
+const string SteelPlate 		= "SteelPlate"; 
+const string Girder 			= "Girder"; 
+const string SmallTube 			= "SmallTube"; 
+const string LargeTube 			= "LargeTube"; 
+const string Motor 				= "Motor"; 
+const string Display 			= "Display"; 
+const string BulletproofGlass 	= "BulletproofGlass"; 
+const string Computer 			= "Computer"; 
+const string Reactor 			= "Reactor"; 
+const string Thrust 			= "Thrust"; 
+const string GravityGenerator 	= "GravityGenerator"; 
+const string Medical 			= "Medical"; 
+const string RadioCommunication	= "RadioCommunication"; 
+const string Detector 			= "Detector"; 
+const string Explosives 		= "Explosives"; 
+const string SolarCell 			= "SolarCell"; 
+const string PowerCell 			= "PowerCell"; 
+const string Superconductor 	= "Superconductor"; 
+ 
+ 
+ 
+//All following definition groups follow the format: 
+// const string CONSTANT = "Inventory Tag Here"; 
+// const int AMMO = number of ammo here; 
+ 
+//Small Ship - Medium Cargo - Both Ammo Types 
+const string XS_MAG = "[XSMG]"; 
+const int XS_MAG_AMMO = 75; 
+const int XS_MAG_MISL = 36; 
+ 
+//Small Ship - Medium Cargo - Bullets Only 
+const string GS_MAG = "[GSMG]";  
+const int GS_MAG_AMMO = 210;  
+ 
+//Small Ship - Medium Cargo - Missiles Only  
+const string MS_MAG = "[MSMG]";  
+const int MS_MAG_MISL = 56; 
+ 
+//Large Ship - Small Cargo/Small Ship - Large Cargo - Both Ammo Types 
+const string XL_MAG = "[XLMG]"; 
+const int XL_MAG_AMMO = 301; 
+const int XL_MAG_MISL = 180; 
+ 
+//Large Ship - Small Cargo/Small Ship - Large Cargo - Bullets Only  
+const string GL_MAG = "[GLMG]";  
+const int GL_MAG_AMMO = 976; 
+ 
+//Large Ship - Small Cargo/Small Ship - Large Cargo - Missiles Only  
+const string ML_MAG = "[MLMG]";  
+const int ML_MAG_MISL = 260; 
+ 
+//Small Ship - Connector - Both Ammo Types 
+const string XC_MAG = "[XCMG]"; 
+const int XC_MAG_AMMO = 34; 
+const int XC_MAG_MISL = 10; 
+ 
+//Small Ship - Connector - Bullets Only  
+const string GC_MAG = "[GCMG]";  
+const int GC_MAG_AMMO = 72; 
+ 
+//Small Ship - Connector - Missiles Only  
+const string MC_MAG = "[MCMG]";   
+const int MC_MAG_MISL = 19; 
+ 
+//Small Ship - Small Cargo - Bullets Only 
+const string N_MAG = "[GNMG]"; 
+const int N_MAG_AMMO = 7; 
+ 
+//Small Ship - Gattling Gun 
+const string G_WEP = "[GTGN]"; 
+const int G_WEP_AMMO = 4; 
+ 
+//Small Ship Self Repair Welder 
+const string W_SR1 = "[WSR1]"; 
+const int W_SR1_Construction 	= 50; 
+const int W_SR1_MetalGrid 		= 20; 
+const int W_SR1_InteriorPlate	= 5; 
+const int W_SR1_SteelPlate 		= 100; 
+const int W_SR1_Girder			= 0; 
+const int W_SR1_SmallTube		= 50; 
+const int W_SR1_LargeTube		= 10; 
+const int W_SR1_Motor			= 15; 
+const int W_SR1_Display			= 3; 
+const int W_SR1_BulletproofGlass= 0; 
+const int W_SR1_Computer		= 100; 
+const int W_SR1_Reactor			= 10; 
+const int W_SR1_Thrust			= 50; 
+const int W_SR1_GravityGenerator= 0; 
+const int W_SR1_Medical			= 0; 
+const int W_SR1_RadioCommunication	= 0; 
+const int W_SR1_Detector 		= 0; 
+const int W_SR1_Explosives 		= 0; 
+const int W_SR1_SolarCell 		= 0; 
+const int W_SR1_PowerCell 		= 0; 
+const int W_SR1_Superconductor	= 0; 
+ 
+ 
+ 
+ 
+//Runs "reload" function for all defined inventory types. 
+public void Main() 
+{ 
+    reload(XS_MAG, XS_MAG_AMMO, XS_MAG_MISL); 
+    reload(GS_MAG, XS_MAG_AMMO, 0); 
+    reload(MS_MAG, 0, MS_MAG_MISL); 
+ 
+    reload(XL_MAG, XL_MAG_AMMO, XL_MAG_MISL);  
+    reload(GL_MAG, XL_MAG_AMMO, 0);  
+    reload(ML_MAG, 0, ML_MAG_MISL); 
+ 
+    reload(XC_MAG, XC_MAG_AMMO, XC_MAG_MISL);  
+    reload(GC_MAG, XC_MAG_AMMO, 0);  
+    reload(MC_MAG, 0, MC_MAG_MISL); 
+ 
+    reload(N_MAG, N_MAG_AMMO, 0); 
+    reload(G_WEP, G_WEP_AMMO, 0); 
+	rlcomponent(W_SR1, W_SR1_Construction, W_SR1_MetalGrid, W_SR1_InteriorPlate, W_SR1_SteelPlate, W_SR1_Girder, W_SR1_SmallTube, W_SR1_LargeTube, W_SR1_Motor, W_SR1_Display, W_SR1_BulletproofGlass, W_SR1_Computer, W_SR1_Reactor, W_SR1_Thrust, W_SR1_GravityGenerator, W_SR1_Medical, W_SR1_RadioCommunication, W_SR1_Detector, W_SR1_Explosives, W_SR1_SolarCell, W_SR1_PowerCell, W_SR1_Superconductor); 
+} 
+ 
+ 
+//Finds all inventories of containing defined tag, and loads them with defined amounts of ammo. 
+void reload(string dest, int ammo_qty, int missile_qty) 
+{ 
+    //Builds list of all source inventories. 
+    List<IMyTerminalBlock> source_list = new List<IMyTerminalBlock>(); 
+    GridTerminalSystem.SearchBlocksOfName(SOURCE_AMMO, source_list); 
+ 
+    //Builds list of all destination inventories. 
+    List<IMyTerminalBlock> dest_list = new List<IMyTerminalBlock>(); 
+    GridTerminalSystem.SearchBlocksOfName(dest, dest_list); 
+ 
+    //Cycles through destination inventories. 
+    for (int c = 0; c < dest_list.Count; c++) 
+    { 
+        //Cycles through source inventories. 
+        for (int d = 0; d < source_list.Count; d++) 
+        { 
+            //Retrieve source and destination inventories. 
+            IMyInventory sourceInv = ((IMyInventoryOwner) source_list[d]).GetInventory(0);  
+            IMyInventory destInv = ((IMyInventoryOwner) dest_list[c]).GetInventory(0);  
+ 
+            //Load Selected Inventory With Ammo and Missiles 
+            ensureMinimumAmount(sourceInv, destInv, AMMO, ammo_qty);   
+            ensureMinimumAmount(sourceInv, destInv, MISL, missile_qty);  
+        } 
+    } 
+} 
+ 
+ 
+ 
+ 
+void rlcomponent(string dest, int Construction_qty, int MetalGrid_qty, int InteriorPlate_qty, int SteelPlate_qty, int Girder_qty, int SmallTube_qty, int LargeTube_qty, int Motor_qty, int Display_qty ,int BulletproofGlass_qty ,int Computer_qty ,int Reactor_qty, int Thrust_qty, int GravityGenerator_qty, int Medical_qty, int RadioCommunication_qty, int Detector_qty, int Explosives_qty, int SolarCell_qty, int PowerCell_qty, int Superconductor_qty) 
+{ 
+    //Builds list of all source inventories. 
+    List<IMyTerminalBlock> source_list = new List<IMyTerminalBlock>(); 
+    GridTerminalSystem.SearchBlocksOfName(SOURCE_COMPONENT, source_list); 
+ 
+    //Builds list of all destination inventories. 
+    List<IMyTerminalBlock> dest_list = new List<IMyTerminalBlock>(); 
+    GridTerminalSystem.SearchBlocksOfName(dest, dest_list); 
+ 
+    //Cycles through destination inventories. 
+    for (int c = 0; c < dest_list.Count; c++) 
+    { 
+        //Cycles through source inventories. 
+        for (int d = 0; d < source_list.Count; d++) 
+        { 
+            //Retrieve source and destination inventories. 
+            IMyInventory sourceInv = ((IMyInventoryOwner) source_list[d]).GetInventory(0);  
+            IMyInventory destInv = ((IMyInventoryOwner) dest_list[c]).GetInventory(0);  
+ 
+            //Load Selected Inventory With Ammo and Missiles 
+            ensureMinimumAmount(sourceInv, destInv, Construction, Construction_qty); 
+			ensureMinimumAmount(sourceInv, destInv, MetalGrid, MetalGrid_qty); 
+			ensureMinimumAmount(sourceInv, destInv, InteriorPlate, InteriorPlate_qty); 
+			ensureMinimumAmount(sourceInv, destInv, SteelPlate, SteelPlate_qty); 
+			ensureMinimumAmount(sourceInv, destInv, Girder, Girder_qty); 
+			ensureMinimumAmount(sourceInv, destInv, SmallTube, SmallTube_qty); 
+			ensureMinimumAmount(sourceInv, destInv, LargeTube, LargeTube_qty); 
+			ensureMinimumAmount(sourceInv, destInv, Motor, Motor_qty); 
+			ensureMinimumAmount(sourceInv, destInv, Display, Display_qty); 
+			ensureMinimumAmount(sourceInv, destInv, BulletproofGlass, BulletproofGlass_qty); 
+			ensureMinimumAmount(sourceInv, destInv, Computer, Computer_qty); 
+			ensureMinimumAmount(sourceInv, destInv, Reactor, Reactor_qty); 
+			ensureMinimumAmount(sourceInv, destInv, Thrust, Thrust_qty); 
+			ensureMinimumAmount(sourceInv, destInv, GravityGenerator, GravityGenerator_qty); 
+			ensureMinimumAmount(sourceInv, destInv, Medical, Medical_qty); 
+			ensureMinimumAmount(sourceInv, destInv, RadioCommunication, RadioCommunication_qty); 
+			ensureMinimumAmount(sourceInv, destInv, Detector, Detector_qty); 
+			ensureMinimumAmount(sourceInv, destInv, Explosives, Explosives_qty); 
+			ensureMinimumAmount(sourceInv, destInv, SolarCell, SolarCell_qty); 
+			ensureMinimumAmount(sourceInv, destInv, PowerCell, PowerCell_qty); 
+			ensureMinimumAmount(sourceInv, destInv, Superconductor, Superconductor_qty);   
+        } 
+    } 
+} 
+ 
+//---------------------------------------------------------------------------------// 
+//ALL CODE BELOW THIS POINT WRITTEN BY PILOTERROR42// 
+//---------------------------------------------------------------------------------// 
+ 
+void ensureMinimumAmount(IMyInventory source, IMyInventory dest, string itemType, int num) 
+{ 
+    while(!hasEnoughOfItem(dest, itemType, num)) 
+    { 
+        int? index = indexOfItem(source, itemType); 
+        if(index == null) 
+            return; 
+        source.TransferItemTo(dest, (int) index, null, true, num - numberOfItemInContainer(dest, itemType)); 
+    } 
+} 
+ 
+ 
+bool hasEnoughOfItem(IMyInventory inventoryToSearch, string itemName, int minAmount) 
+{ 
+    return numberOfItemInContainer(inventoryToSearch, itemName) >= minAmount; 
+} 
+ 
+ 
+int numberOfItemInContainer(IMyInventory inventoryToSearch, string itemName) 
+{ 
+    int total = 0; 
+    List<IMyInventoryItem> items = inventoryToSearch.GetItems(); 
+    for (int c = 0; c < items.Count; c++) 
+    { 
+        if (items[c].Content.SubtypeId.ToString().Equals(itemName)) 
+        { 
+            total += (int)(items[c].Amount); 
+        } 
+    } 
+    return total; 
+} 
+ 
+ 
+Nullable <int> indexOfItem(IMyInventory source, string item) 
+{ 
+    List<IMyInventoryItem> items = source.GetItems(); 
+    for (int c = 0; c < items.Count; c++) 
+    { 
+        if(items[c].Content.SubtypeId.ToString().Equals(item)) 
+        { 
+            return c; 
+        } 
+    } 
+    return null; 
+} 
+ 
+ 
+ 
