@@ -1,7 +1,8 @@
-//hd142 edit on 8/13/2018
+//hd142 edit on 8/15/2018
 /*    
 Whip's Optical Missile Guidance System v62-13 - revised: 8/31/17
-Updated and combined with Whip's raycast tripwire script  
+Updated and combined with Whip's raycast tripwire script
+Thank you, Whiplash, for giving us all solid code to kitbash together  
 /// Unstable code that may explode (or not) /// 
 _______________________________________________________________________            
 ///DESCRIPTION///     
@@ -9,6 +10,7 @@ _______________________________________________________________________
     heading of his/her ship! The missiles will behave similar to a TOW missile.  
 _______________________________________________________________________            
 ///FEATURES///
+	* Automatic hydrogen tank and oxygen generator handling
 	* Camera raycast fusing to detonate warheads! Exciting! Dangerous!
     * Configurable spiral trajectory to avoid turrets! (can be turned off)  
     * Configurable detach sequence parameters!  
@@ -33,7 +35,7 @@ ____________________________________________________________
     * An artificial mass block  
     * A beacon  
     * An antenna
-	* At least one camera for raycast fusing
+	* A camera for raycast fusing
 	* Warheads. The script will handle arming and detonation.
  
     ALL BLOCKS on the missile should have the name tag "Missile 1" added in their names.  
@@ -44,7 +46,8 @@ ____________________________________________________________
     * Any detach thrusters need the name tag "Detach" in addition to the missile tag  
  
 ===TIMER SETUP===  
-    Timers are no longer required!
+    * Timers are no longer required!
+	* Any timer named "Tripwire" will be triggered at detonationRange meters from the target.
 ______________________________________________________________________            
 ///SHOOTER SHIP SETUP///  
  
@@ -138,6 +141,14 @@ bool lockVectorOnLaunch = false; //if the code will lock on the the shooter's ve
 //--- Activate beacons and antennas
 bool beaconsOn = true; //if on, they will scale their range so you can always see them... and the enemy can too
 bool antennasOn = false; //may be necessary for function in a future update
+
+//---Warhead fusing. Default false, let the tripwire code handle detonation instead. Don't change from false unless you're Australian, crazy, or both.
+bool warheadsArmedOnGuidance = false;
+
+//---Variables from the fusing script
+double detonationRange = 2.5; //range of tripwire (forward of camera's face). Missile will instantly detonate if it sees a valid target this far away or less.  
+public bool ignorePlanetSurface = false; //if the code should ignore planet surfaces  
+public bool ignoreFriends = true; //if the code should ignore friendlies. Leaving this on true is a really good idea.
  
 /*     
 ___________________________________________________________________     
@@ -168,7 +179,9 @@ List<IMyTerminalBlock> antennas = new List<IMyTerminalBlock>();
 List<IMyTerminalBlock> beacons = new List<IMyTerminalBlock>(); 
 List<IMyTerminalBlock> sensors = new List<IMyTerminalBlock>(); 
 List<IMyTerminalBlock> warheads = new List<IMyTerminalBlock>();
-List<IMyTerminalBlock> cameras = new List<IMyTerminalBlock>(); 
+List<IMyTerminalBlock> cameras = new List<IMyTerminalBlock>();
+List<IMyTerminalBlock> hydrogenTanks = new List<IMyTerminalBlock>();
+List<IMyTerminalBlock> hydrogenGenerators = new List<IMyTerminalBlock>();  
  
 //---Yo dawg... I heard u like vectors...  
 Vector3D shooterForwardVec; 
@@ -199,9 +212,6 @@ bool missileStage4 = false;
 
 //---Variables from the fusing script
 const string timerName = "Tripwire"; //Name of timers to be triggered on tripwire being crossed  
-const double range = 2.5; //range of tripwire (forward of camera's face)  
-const bool ignorePlanetSurface = false; //if the code should ignore planet surfaces  
-const bool ignoreFriends = true; //if the code should ignore friendlies
  
 //---Store all this important stuff for computations between methods  
 double distanceFromShooter; 
@@ -353,6 +363,8 @@ void ClearLists()
     sensors.Clear(); 
     warheads.Clear();
 	cameras.Clear();
+	hydrogenTanks.Clear();
+	hydrogenGenerators.Clear();
 } 
  
 bool GrabBlocks() 
@@ -458,11 +470,29 @@ bool GrabBlocks()
         else if (thisBlock is IMyWarhead) 
         { 
             warheads.Add(thisBlock); 
+        }
+		else if (thisBlock is IMyGasGenerator) 
+        { 
+            hydrogenGenerators.Add(thisBlock); 
+        } 
+		else if (thisBlock is IMyGasTank) 
+        { 
+            hydrogenTanks.Add(thisBlock); 
         } 
     } 
  
     Echo("Setup results for " + missileTag); 
-    //---Check what we have and display any missing blocks  
+    //---Check what we have and display any missing blocks
+    if (hydrogenTanks.Count == 0) 
+    { 
+        Echo("[OPTIONAL] No hydrogen tanks found"); 
+    }
+	
+	if (hydrogenGenerators.Count == 0) 
+    { 
+        Echo("[OPTIONAL] No hydrogen generators found"); 
+    }
+ 	
     if (artMasses.Count == 0) 
     { 
         Echo("[OPTIONAL] No artificial masses found"); 
@@ -598,7 +628,12 @@ void LaunchMissile()
 { 
     //Stage 1: Discharge  
     if (!missileStage1) //set battery to discharge  
-    { 
+    {
+		 foreach (IMyWarhead thisWarhead in warheads) 
+        { 
+            thisWarhead.SetValue("Safety", true); //disarms warheads until stage 4 and main engine ignition
+        }
+		
         foreach (IMyBatteryBlock thisBattery in batteries) 
         { 
             thisBattery.ApplyAction("OnOff_On"); //make sure our battery is on   
@@ -628,6 +663,18 @@ void LaunchMissile()
     //Stage 2: Release  
     else if (timeTotal >= disconnectDelay && !missileStage2) //detach missile  
     { 
+	
+	    foreach (IMyGasTank thisTank in hydrogenTanks) 
+        { 
+            thisTank.ApplyAction("OnOff_On");
+			thisTank.ApplyAction("Stockpile_Off"); 			
+        }
+		
+		foreach (IMyGasGenerator thisGenerator in hydrogenGenerators) 
+        { 
+            thisGenerator.ApplyAction("OnOff_On"); 
+        }
+		
         foreach (IMyVirtualMass thisMass in artMasses) 
         { 
             thisMass.ApplyAction("OnOff_On"); 
@@ -718,12 +765,13 @@ void LaunchMissile()
             thisSensor.ApplyAction("OnOff_On"); 
         } 
  
-        foreach (IMyWarhead thisWarhead in warheads) 
-        { 
-            thisWarhead.SetValue("Safety", false); //arms warheads... Keen is drunk
+		
+		foreach (IMyWarhead thisWarhead in warheads) 
+		{ 
+			thisWarhead.SetValue("Safety", (bool)warheadsArmedOnGuidance); //arms warheads... Keen is drunk
 			//edited by hd142 to not arm warheads, true is armed on launch false is not armed on launch
 			//meant to support whip's tripwire script instead
-        } 
+		} 
  
         MainThrustOverride(); 
         missileStage4 = true; 
@@ -1208,7 +1256,11 @@ void BuildConfig(IMyTerminalBlock block)
     configDict.Add("missileSpinRPM", missileSpinRPM.ToString()); 
     configDict.Add("lockVectorOnLaunch", lockVectorOnLaunch.ToString());
 	configDict.Add("antennasOn", antennasOn.ToString());
-	configDict.Add("beaconsOn", beaconsOn.ToString()); 
+	configDict.Add("beaconsOn", beaconsOn.ToString());
+	configDict.Add("warheadsArmedOnGuidance", warheadsArmedOnGuidance.ToString());
+	configDict.Add("detonationRange", detonationRange.ToString());
+	configDict.Add("ignorePlanetSurface", ignorePlanetSurface.ToString());
+	configDict.Add("ignoreFriends", ignoreFriends.ToString());
  
      
     UpdateConfig(block, true); 
@@ -1254,6 +1306,10 @@ void UpdateConfig(IMyTerminalBlock block, bool isBuilding = false)
     GetVariableFromConfig("lockVectorOnLaunch", ref lockVectorOnLaunch);
 	GetVariableFromConfig("antennasOn", ref antennasOn);
 	GetVariableFromConfig("beaconsOn", ref beaconsOn);
+	GetVariableFromConfig("warheadsArmedOnGuidance", ref warheadsArmedOnGuidance);
+	GetVariableFromConfig("detonationRange", ref detonationRange);
+	GetVariableFromConfig("ignorePlanetSurface", ref ignorePlanetSurface);
+	GetVariableFromConfig("ignoreFriends", ref ignoreFriends);
      
     WriteConfig(block); 
      
@@ -1370,7 +1426,7 @@ void Fuse()
 	{  
 		//if(!thisCamera.CanScan(range)) continue; 
 		 
-		var targetInfo = thisCamera.Raycast(range);  
+		var targetInfo = thisCamera.Raycast(detonationRange);  
 
 		if (targetInfo.IsEmpty())  
 		{  
@@ -1400,6 +1456,7 @@ void Fuse()
 //end methods from the fusing script 
 
 //Whip's Profiler Graph Code
+
 int count = 1;
 int maxSeconds = 30;
 StringBuilder profile = new StringBuilder();
@@ -1503,6 +1560,8 @@ public class PID
  
 /* 
 CHANGELOG:
+- More CustomData config settings
+- Hydrogen tanks and O2 generators now get automatically turned on, stockpile for tanks will be deactivated
 - Missiles support camera raycast fusing
 - Timer blocks no longer required
 - Reactors and batteries power off when missile is killed, warheads detonate
