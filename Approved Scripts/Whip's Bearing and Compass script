@@ -1,0 +1,431 @@
+/* 
+/// Whip's Compass & Bearing Code v19 - 7/31/18 /// 
+
+How do I use this? 
+    1) Make a program block with this script loaded into it 
+
+    2) Make a ship controller pointing forward 
+        - Add the word "Reference" somewhere in its name. 
+
+    3) Make a text panel or LCD screen: Add the word "Bearing" in the name. 
+        Also make sure the screen is set to show public text. 
+        - Make the font MONOSPACED
+
+    4) You are good to go! :)
+
+Be sure to drop by my workshop page and leave a comment :D
+http://steamcommunity.com/sharedfiles/filedetails/?id=616627882
+
+Code by Whiplash141 
+*/
+
+
+//You can change these names if you'd like
+const string referenceName = "Reference"; //name of ship controller to use as reference 
+
+const string displayScreenName = "Bearing"; //name of screen to display bearing on
+
+int compassWidth = 21;
+
+bool writeBearingOnCompass = false;
+
+bool isEasyStartPlanetWorld = true;
+    //Set this to true if the world you are playing in was created using an easy
+    //start planet or solar system preset.
+
+/*
+_______________________________________________________________________________________
+
+======================== Don't edit anything beyond this :) =======================
+_______________________________________________________________________________________
+*/
+
+Vector3D absoluteNorthVecPlanetWorlds = new Vector3D(0, -1, 0); //this was determined via Keen's code
+Vector3D absoluteNorthVecNotPlanetWorlds = new Vector3D(0.342063708833718, -0.704407897782847, -0.621934025954579); //this was determined via Keen's code
+Vector3D absoluteNorthVec;
+double bearingAngle; //measured off relative north 
+const double rad2deg = 180 / Math.PI; //constant to convert radians to degrees 
+const double timeMaxCycle = 0.1;
+const double runtimeToRealTime = 1.0 / 0.96;
+double timeCurrentCycle = 141;
+float fontSize = 0f;
+
+const string baseCompassString = "N >----<N.E>----< E >----<S.E>----< S >----<S.W>----< W >----<N.W>----< "
+    + "N >----<N.E>----< E >----<S.E>----< S >----<S.W>----< W >----<N.W>----< ";
+    
+string compassString;
+
+string[] cardinalDirections = new string[]
+{
+    "N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"
+};
+    
+string bearingString = "";
+string strCardinalDirection = "";
+
+bool isSetup = false;
+double refreshInterval = 10;
+double timeSinceRefresh = 141;
+
+Program()
+{
+    if(isEasyStartPlanetWorld)
+        absoluteNorthVec = absoluteNorthVecPlanetWorlds;
+    else
+        absoluteNorthVec = absoluteNorthVecNotPlanetWorlds;
+    
+    Runtime.UpdateFrequency = UpdateFrequency.Update1;
+}
+
+void Main(string arg, UpdateType updateType)
+{
+    //Bandaid for keen bug related to Dedicated Servers
+    //if ((updateType & UpdateType.Once) != 0) //only run code logic if 
+    //    Runtime.UpdateFrequency = UpdateFrequency.Update1;
+    
+    //if ((updateType & UpdateType.Update1) == 0) //only run code logic if 
+    //    return;
+    
+    var lastRuntime = runtimeToRealTime * Math.Max(Runtime.TimeSinceLastRun.TotalSeconds, 0);
+    timeCurrentCycle += lastRuntime;
+    timeSinceRefresh += lastRuntime;
+    
+    if (timeCurrentCycle < timeMaxCycle)
+        return;
+    
+    Echo("WMI Planetary Compass Online... " + RunningSymbol());
+
+    Echo($"\nNext refresh in {Math.Max(refreshInterval - timeSinceRefresh, 0):N0} seconds\n");
+    
+    if (timeSinceRefresh >= refreshInterval || !isSetup)
+    {
+        isSetup = GrabBlocks();
+        timeSinceRefresh = 0;
+    }
+    
+    Echo($"Last setup results:\n{setupSB}");
+    
+    if (!isSetup)
+        return;
+    
+    GetBearing(); //run bearing code 
+    WriteBearing(bearingString); //write to text screens 
+    //Echo("Bearing: " + Math.Round(bearingAngle, 2).ToString()); //for debugging 
+
+    timeCurrentCycle = 0;
+}
+
+List<IMyShipController> referenceBlocks = new List<IMyShipController>();
+List<IMyTextPanel> listScreens = new List<IMyTextPanel>();
+StringBuilder setupSB = new StringBuilder();
+bool GrabBlocks()
+{
+    GetAllowedGrids(Me, 5000);
+    if (!allowedGridsFinished)
+    {
+        return false;
+    }
+    
+    setupSB.Clear();
+    GridTerminalSystem.GetBlocksOfType(referenceBlocks, x => IsAllowedGrid(x) && StringExtensions.Contains(x.CustomName, referenceName));
+    if (referenceBlocks.Count == 0)
+    {
+        setupSB.AppendLine($"> Info: No ship controller with tag '{referenceName}'\n  Using all ship controllers\n");
+        GridTerminalSystem.GetBlocksOfType(referenceBlocks, x => IsAllowedGrid(x));
+    }
+
+    GridTerminalSystem.GetBlocksOfType(listScreens, x => IsAllowedGrid(x) && StringExtensions.Contains(x.CustomName, displayScreenName));
+    
+    bool goodToGo = true;
+    if (referenceBlocks.Count == 0)
+    {
+        setupSB.AppendLine($"> Error: No ship controllers found\n  You need a remote, cockpit, or flight seat\n");
+        goodToGo = false;;
+    }
+    
+    if (listScreens.Count == 0)
+    {
+        setupSB.AppendLine($"> Error: No text panels with name tag '{displayScreenName}' found\n");
+        goodToGo = false;
+    }
+    
+    if (goodToGo)
+        setupSB.AppendLine($">> Setup successful");
+    else
+        setupSB.AppendLine($">> Setup failed");
+    
+    setupSB.AppendLine($"   {referenceBlocks.Count} ship controller(s) found\n   {listScreens.Count} screen(s) found");
+    
+    return goodToGo;
+}
+
+IMyShipController GetControlledShipController(List<IMyShipController> controllers)
+{
+    foreach (IMyShipController thisController in controllers)
+    {
+        if (thisController.IsUnderControl && thisController.CanControlShip)
+            return thisController;
+    }
+
+    return controllers[0];
+}
+
+void GetBearing()
+{
+    //get forward and right vectors of the ship 
+    var reference = GetControlledShipController(referenceBlocks);
+    Vector3D forwardVec = reference.WorldMatrix.Forward;
+
+    //get grav vector 
+    Vector3D gravityVec = reference.GetNaturalGravity();
+
+    //check if grav vector exists 
+    double gravMag = gravityVec.LengthSquared();
+    if (double.IsNaN(gravMag) || gravMag == 0)
+    {
+        Echo("Error: No natural gravity detected!");
+        bearingString = TextHelper.CenterTextMonospace("No gravity\ndetected...", fontSize);
+        return;
+    }
+
+    //get east vector 
+    Vector3D relativeEastVec = gravityVec.Cross(absoluteNorthVec);
+
+    //get relative north vector 
+    Vector3D relativeNorthVec = relativeEastVec.Cross(gravityVec);
+
+    //project forward vector onto a plane comprised of the north and east vectors 
+    Vector3D forwardProjNorthVec = VectorProjection(forwardVec, relativeNorthVec);
+    Vector3D forwardProjEastVec = VectorProjection(forwardVec, relativeEastVec);
+    Vector3D forwardProjPlaneVec = forwardProjEastVec + forwardProjNorthVec;
+
+    //find angle from abs north to projected forward vector measured clockwise 
+    bearingAngle = Math.Acos(forwardProjPlaneVec.Dot(relativeNorthVec) / forwardProjPlaneVec.Length() / relativeNorthVec.Length()) * rad2deg;                                                                                                                                                   //w.h.i.P l a.s h 1. 4 1                                                                                                        
+
+    //check direction of angle 
+    if (forwardVec.Dot(relativeEastVec) < 0)
+    {
+        bearingAngle = 360 - bearingAngle; //because of how the angle is measured 
+    }
+    
+    if (bearingAngle >= 359.5)
+        bearingAngle = 0;
+    
+    var index = (int)Math.Round(bearingAngle / 45d);
+    strCardinalDirection = cardinalDirections[index];
+    
+    if (compassWidth % 2 == 0)
+        compassWidth ++;
+    
+    if (compassWidth < 5)
+        compassWidth = 21; //backup
+    
+    if (compassWidth > 125)
+        compassWidth = 125;
+    
+    fontSize = TextHelper.GetMinimumFontSizeMonospace(compassWidth);
+    
+    compassString = baseCompassString.Substring(baseCompassString.Length - compassWidth / 2) + baseCompassString;
+    
+    
+    if (!writeBearingOnCompass)
+    {
+        bearingString = $"{compassString.Substring((int)MathHelper.Clamp(Math.Round(bearingAngle / 5), 0, 359), compassWidth)}\n^";
+        bearingString = TextHelper.CenterTextMonospace(bearingString, fontSize);
+        bearingString = $"Bearing: {bearingAngle:000}° {strCardinalDirection}\n" + bearingString;
+    }
+    else
+    {
+        bearingString = compassString.Substring((int)MathHelper.Clamp(Math.Round(bearingAngle / 5), 0, 359), compassWidth) + "\n^";
+        
+        int replaceIndex = compassWidth / 2 - 2;
+        bearingString = bearingString.Remove(replaceIndex, 5).Insert(replaceIndex, $"<{Math.Round(bearingAngle):000}>");
+        bearingString = TextHelper.CenterTextMonospace(bearingString, fontSize);
+    }
+}
+
+Vector3D VectorProjection(Vector3D a, Vector3D b)
+{
+    Vector3D projection = a.Dot(b) / b.Length() / b.Length() * b;
+    return projection;
+}
+
+void WriteBearing(string textToWrite)
+{
+    if (listScreens.Count == 0)
+    {
+        return;
+    }
+    
+    foreach (var thisScreen in listScreens)
+    {
+        thisScreen.WritePublicText(textToWrite);
+        thisScreen.ShowPublicTextOnScreen();
+        thisScreen.SetValue<float>("FontSize", fontSize);
+        thisScreen.SetValue<long>("Font", 1147350002);
+    }
+}
+
+public static class StringExtensions
+{
+    public static bool Contains(string source, string toCheck, StringComparison comp = StringComparison.OrdinalIgnoreCase)
+    {
+        return source?.IndexOf(toCheck, comp) >= 0;
+    }
+}
+
+/*
+/ //// / Whip's GetAllowedGrids method v1 - 3/17/18 / //// /
+Derived from Digi's GetShipGrids() method - https://pastebin.com/MQUHQTg2
+*/
+List<IMyMechanicalConnectionBlock> allMechanical = new List<IMyMechanicalConnectionBlock>();
+HashSet<IMyCubeGrid> allowedGrids = new HashSet<IMyCubeGrid>();
+bool allowedGridsFinished = true;
+void GetAllowedGrids(IMyTerminalBlock reference, int instructionLimit = 1000)
+{
+    if (allowedGridsFinished)
+    {
+        allowedGrids.Clear();
+        allowedGrids.Add(reference.CubeGrid);
+    }
+
+    GridTerminalSystem.GetBlocksOfType(allMechanical, x => x.TopGrid != null);
+
+    bool foundStuff = true;
+    while (foundStuff)
+    {
+        foundStuff = false;
+
+        for (int i = allMechanical.Count - 1; i >= 0; i--)
+        {
+            var block = allMechanical[i];
+            if (allowedGrids.Contains(block.CubeGrid))
+            {
+                allowedGrids.Add(block.TopGrid);
+                allMechanical.RemoveAt(i);
+                foundStuff = true;
+            }
+            else if (allowedGrids.Contains(block.TopGrid))
+            {
+                allowedGrids.Add(block.CubeGrid);
+                allMechanical.RemoveAt(i);
+                foundStuff = true;
+            }
+        }
+
+        if (Runtime.CurrentInstructionCount >= instructionLimit)
+        {
+            Echo("Instruction limit reached\nawaiting next run");
+            allowedGridsFinished = false;
+            return;
+        }
+    }
+
+    allowedGridsFinished = true;
+}
+
+bool IsAllowedGrid(IMyTerminalBlock block)
+{
+    return allowedGrids.Contains(block.CubeGrid);
+}
+
+// Whip's Monospace TextHelper Class v2
+public class TextHelper
+{
+    static StringBuilder textSB = new StringBuilder();
+    const float adjustedPixelWidth = (512f / 0.778378367f);
+    const int monospaceCharWidth = 24 + 1; //accounting for spacer
+
+    public static float GetMinimumFontSizeMonospace(int textCharacters)
+    {
+        var pixelWidth = textCharacters * monospaceCharWidth;
+        return adjustedPixelWidth / pixelWidth;
+    }
+
+    public static string WrapTextMonospace(string text, float fontSize)
+    {
+        textSB.Clear();
+        var words = text.Split(' ');
+        var screenWidth = (adjustedPixelWidth / fontSize);
+        int currentLineWidth = 0;
+        foreach (var word in words)
+        {
+            if (currentLineWidth == 0)
+            {
+                textSB.Append($"{word}");
+                currentLineWidth += word.Length * monospaceCharWidth;
+                continue;
+            }
+
+            currentLineWidth += (1 + word.Length) * monospaceCharWidth;
+            if (currentLineWidth > screenWidth) //new line
+            {
+                currentLineWidth = word.Length * monospaceCharWidth;
+                textSB.Append($"\n{word}");
+            }
+            else
+            {
+                textSB.Append($" {word}");
+            }
+
+        }
+        return textSB.ToString();
+    }
+
+    public static string CenterTextMonospace(string wrappedText, float fontSize)
+    {
+        textSB.Clear();
+        var lines = wrappedText.Split('\n');
+        var screenWidth = (adjustedPixelWidth / fontSize);
+        var maxCharsPerLine = Math.Floor(screenWidth / monospaceCharWidth);
+
+        foreach (var line in lines)
+        {
+            var trimmedLine = line.Trim();
+            var charCount = trimmedLine.Length;
+            var diff = maxCharsPerLine - charCount;
+            var halfDiff = (int)Math.Max(diff / 2, 0);
+            textSB.Append(new string(' ', halfDiff)).Append(trimmedLine).Append("\n");
+        }
+        return textSB.ToString();
+    }
+
+    public static string RightJustifyMonospace(string wrappedText, float fontSize)
+    {
+        textSB.Clear();
+        var lines = wrappedText.Split('\n');
+        var screenWidth = (adjustedPixelWidth / fontSize);
+        var maxCharsPerLine = (int)Math.Floor(screenWidth / monospaceCharWidth);
+
+        foreach (var line in lines)
+        {
+            var trimmedLine = line.Trim();
+            var charCount = trimmedLine.Length;
+            var diff = maxCharsPerLine - charCount;
+            diff = (int)Math.Max(0, diff);
+            textSB.Append(new string(' ', diff)).Append(trimmedLine).Append("\n");
+        }
+        return textSB.ToString();
+    }
+}
+
+//Whip's Running Symbol Method v8
+//•
+int runningSymbolVariant = 0;
+int runningSymbolCount = 0;
+const int increment = 1;
+string[] runningSymbols = new string[] {"−", "\\", "|", "/"};
+
+string RunningSymbol()
+{
+    if (runningSymbolCount >= increment)
+    {
+        runningSymbolCount = 0;
+        runningSymbolVariant++;
+        if (runningSymbolVariant >= runningSymbols.Length)
+            runningSymbolVariant = 0;
+    }
+    runningSymbolCount++;
+    return runningSymbols[runningSymbolVariant];
+}
+
