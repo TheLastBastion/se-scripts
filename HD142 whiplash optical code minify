@@ -1,0 +1,167 @@
+//hd142 edit on 8/13/2018
+//Whip's Optical Missile Guidance System v62-13 - revised: 8/31/17
+//Updated and combined with Whip's raycast tripwire script 
+// Minified version saves much server lag on loadin due to much smaller code size in BP
+// very important when you have 20 + missiles
+string a="Missile 1";string b="Detach";string c="Shooter Reference";double d=20;double e=1;double f=1;
+double g=1;double h=0;bool i=true;bool j=false;double k=5;double l=3;double m=50;double n=20;double o
+=0;double p=0;double q=0;bool r=false;bool s=true;bool t=false;List<IMyTerminalBlock>u=new List<IMyTerminalBlock>();
+List<IMyTerminalBlock>v=new List<IMyTerminalBlock>();List<IMyTerminalBlock>w=new List<IMyTerminalBlock>();
+List<IMyTerminalBlock>x=new List<IMyTerminalBlock>();List<IMyTerminalBlock>y=new List<IMyTerminalBlock>();
+List<IMyTerminalBlock>z=new List<IMyTerminalBlock>();List<IMyTerminalBlock>A=new List<IMyTerminalBlock>();
+List<IMyTerminalBlock>B=new List<IMyTerminalBlock>();List<IMyTerminalBlock>C=new List<IMyTerminalBlock>();
+List<IMyTerminalBlock>D=new List<IMyTerminalBlock>();List<IMyTerminalBlock>E=new List<IMyTerminalBlock>();
+List<IMyTerminalBlock>F=new List<IMyTerminalBlock>();List<IMyTerminalBlock>G=new List<IMyTerminalBlock>();
+List<IMyTerminalBlock>H=new List<IMyTerminalBlock>();List<IMyTerminalBlock>I=new List<IMyTerminalBlock>();
+List<IMyTerminalBlock>J=new List<IMyTerminalBlock>();List<IMyTerminalBlock>K=new List<IMyTerminalBlock>();
+List<IMyTerminalBlock>L=new List<IMyTerminalBlock>();List<IMyTerminalBlock>M=new List<IMyTerminalBlock>();
+List<IMyTerminalBlock>N=new List<IMyTerminalBlock>();List<IMyTerminalBlock>O=new List<IMyTerminalBlock>();
+List<IMyTerminalBlock>P=new List<IMyTerminalBlock>();List<IMyTerminalBlock>Q=new List<IMyTerminalBlock>();
+Vector3D R;Vector3D S;Vector3D T;Vector3D U;Vector3D V;Vector3D W;Vector3D X;Vector3D Y;IMyTerminalBlock
+Z=null;IMyRemoteControl ba=null;bool bb=false;bool bc=false;bool bd=true;bool be=false;bool bf=false;
+bool bg=false;bool bh=false;bool bi=false;bool bj=false;bool bk=false;bool bl=false;const string bm=
+"Tripwire";const double bn=2.5;const bool bo=false;const bool bp=true;double bq;double br=3;double bs
+=0;double bt=0;double bu=0;dY bv;dY bw;double bx=10000;const double by=Math.PI/180;const double bz=180
+/Math.PI;const double bA=300;Program(){dy(Me);}double bB=1E-6;void Main(string bC){if((bC.ToLower()==
+"fire")||(!bd)){if(!bb){bb=bM();}if(!bb)return;if(bd){Runtime.UpdateFrequency=UpdateFrequency.Update1;
+bt=0;bu=0;bd=false;if(r){if(Z is IMyLargeTurretBase){var bD=Z as IMyLargeTurretBase;double bE=(double)bD.Azimuth;
+double bF=(double)bD.Elevation;R=Vector3D.Normalize(cv(bE,bF,Z));S=R.Cross(bD.WorldMatrix.Down);T=R.Cross(S);
+}else{R=Z.WorldMatrix.Forward;S=Z.WorldMatrix.Left;T=Z.WorldMatrix.Up;}U=Z.GetPosition()+p*S+o*T;}}else
+{bt+=1.0/60.0;bu+=1.0/60.0;dp+=1.0/60.0;}bV();bT();if(bu+bB>=f&&bt+bB>=(1d/d)){Echo("WMI Optical Missile Guidance System Active...");
+Echo("Run Time: "+Math.Round(bu).ToString());bW();bt=0;}if(bu+bB>=f){dQ();}}else if(bC.ToLower()=="setup")
+{bM();}else if(bC.ToLower()=="kill"&&bg){be=true;bx=double.PositiveInfinity;}if(bu>bA){be=true;cF(0,
+0);bx=double.PositiveInfinity;}}bool bG(IMyTerminalBlock bH){var bI=bH as IMyRemoteControl;return bI
+!=null;}bool bJ(IMyTerminalBlock bH){var bK=bH as IMyLargeTurretBase;return bK!=null;}void bL(){u.Clear();
+v.Clear();w.Clear();x.Clear();y.Clear();z.Clear();A.Clear();B.Clear();C.Clear();D.Clear();E.Clear();
+F.Clear();G.Clear();H.Clear();I.Clear();J.Clear();K.Clear();L.Clear();M.Clear();N.Clear();O.Clear();
+P.Clear();Q.Clear();}bool bM(){dz(Me);bL();bv=new dY(m,0,n,.25,1.0/d);bw=new dY(m,0,n,.25,1.0/d);bc=
+false;GridTerminalSystem.SearchBlocksOfName(a,u);GridTerminalSystem.SearchBlocksOfName(c,D,bG);GridTerminalSystem.SearchBlocksOfName(c,
+E,bJ);for(int i=0;i<D.Count;i++){I.Add(D[i]);}for(int i=0;i<E.Count;i++){I.Add(E[i]);}for(int i=0;i<
+u.Count;i++){var bN=u[i]as IMyTerminalBlock;if(bN is IMyThrust){if(bN.CustomName.Contains(b)){y.Add(bN);
+v.Add(bN);}else{v.Add(bN);}}else if(bN is IMyVirtualMass){z.Add(bN);}else if(bN is IMyCameraBlock){Q.Add(bN);
+}else if(bN is IMyBatteryBlock){B.Add(bN);}else if(bN is IMyGyro){F.Add(bN);I.Add(bN);}else if(bN is
+IMyShipMergeBlock){A.Add(bN);}else if(bN is IMyTimerBlock){G.Add(bN);I.Add(bN);}else if(bN is IMyProgrammableBlock)
+{H.Add(bN);I.Add(bN);}else if(bN is IMyRemoteControl){C.Add(bN);}else if(bN is IMyShipConnector){J.Add(bN);
+}else if(bN is IMyMotorStator){K.Add(bN);}else if(bN is IMyReactor){L.Add(bN);}else if(bN is IMyRadioAntenna)
+{M.Add(bN);}else if(bN is IMyBeacon){N.Add(bN);}else if(bN is IMySensorBlock){O.Add(bN);}else if(bN is
+IMyWarhead){P.Add(bN);}}Echo("Setup results for "+a);if(z.Count==0){Echo("[OPTIONAL] No artificial masses found");
+}if(O.Count==0){Echo("[OPTIONAL] No sensors found");}if(P.Count==0){Echo("[OPTIONAL] No warheads found");
+}if(N.Count==0){Echo("[OPTIONAL] No beacons found");}if(M.Count==0){Echo("[OPTIONAL] No antennas found");
+}if(Q.Count==0){Echo("[OPTIONAL] No cameras found");}if(D.Count==0&&E.Count==0){Echo("[FAILED] No remote or turret named '"
++c+"'found");bc=true;}if(F.Count==0){Echo("[FAILED] No control gyros found");bc=true;}if(C.Count==0)
+{Echo("[FAILED] No remotes found");bc=true;}else{bO(C[0]);}if(x.Count==0){Echo("[OPTIONAL] No side thrusters found");
+}if(y.Count==0){Echo("[OPTIONAL] No detach thrusters found");}if(w.Count==0){Echo("[FAILED] No main thrusters found");
+bc=true;}if(B.Count==0&&L.Count==0){Echo("[FAILED] No batteries or reactors found");bc=true;}if(A.Count
+==0&&K.Count==0&&J.Count==0){Echo("[WARNING] No merge blocks, rotors, or connectors found");}if(!bc)
+{Echo("[SUCCESS] Ready to run");if(D.Count!=0)Z=D[0];else Z=E[0];ba=C[0]as IMyRemoteControl;}return(!bc);
+}void bO(IMyTerminalBlock refBlock){var bQ=refBlock.WorldMatrix.Forward;foreach(IMyThrust thisThrust
+in v){var bR=thisThrust.WorldMatrix.Backward;bool bS=bR==bQ;if(bS){w.Add(thisThrust);}else{x.Add(thisThrust);
+}}}void bT(){for(int k=0;k<I.Count;k++){IMyTerminalBlock bH=I[k];IMySlimBlock bU=bH.CubeGrid.GetCubeBlock(bH.Position);
+if(bU.CurrentDamage>0){Echo("Damage");bs=br;cF(0,0);return;}}}void bV(){if(!bi){foreach(IMyBatteryBlock
+thisBattery in B){thisBattery.ApplyAction("OnOff_On");thisBattery.SetValue("Recharge",false);thisBattery.SetValue("Discharge",
+false);}foreach(IMyReactor thisReactor in L){thisReactor.ApplyAction("OnOff_On");}foreach(IMySensorBlock
+thisSensor in O){thisSensor.ApplyAction("OnOff_Off");}foreach(IMyWarhead thisWarhead in P){thisWarhead.SetValue("Safety",
+false);}bi=true;}else if(bu>=e&&!bj){foreach(IMyVirtualMass thisMass in z){thisMass.ApplyAction("OnOff_On");
+}foreach(IMyCameraBlock thisCamera in Q){thisCamera.ApplyAction("OnOff_On");thisCamera.EnableRaycast
+=true;}foreach(IMyGyro thisGyro in F){thisGyro.ApplyAction("OnOff_On");}foreach(IMyShipMergeBlock thisMerge
+in A){thisMerge.ApplyAction("OnOff_Off");}foreach(IMyShipConnector thisConnector in J){thisConnector.ApplyAction("Unlock");
+}foreach(IMyMotorStator thisRotor in K){thisRotor.SetValue("Force weld",false);thisRotor.ApplyAction("Detach");
+}if((t)&&(M.Count!=0)){foreach(IMyRadioAntenna thisAntenna in M){thisAntenna.SetValue("Radius",800f);
+thisAntenna.ApplyAction("OnOff_Off");thisAntenna.SetValue("EnableBroadCast",true);thisAntenna.ApplyAction("OnOff_On");
+thisAntenna.CustomName="";}}if((s)&&(N.Count!=0)){foreach(IMyBeacon thisBeacon in N){thisBeacon.SetValue("Radius",
+50f);thisBeacon.ApplyAction("OnOff_On");thisBeacon.CustomName="";}}cC(false);foreach(IMyThrust thisThrust
+in y){thisThrust.ApplyAction("OnOff_On");thisThrust.SetValue("Override",float.MaxValue);}bg=true;bj=
+true;}else if(bu>=e+g&&!bk){foreach(IMyThrust thisThrust in y){thisThrust.SetValue("Override",float.MinValue);
+}bk=true;}else if(bu>=e+h+g&&!bl){cC(true);foreach(IMyVirtualMass thisMass in z){thisMass.ApplyAction("OnOff_Off");
+}foreach(IMySensorBlock thisSensor in O){thisSensor.ApplyAction("OnOff_On");}foreach(IMyWarhead thisWarhead
+in P){thisWarhead.SetValue("Safety",false);}cE();bl=true;}}void bW(){if(!be&&!r){if(Z is IMyLargeTurretBase)
+{var bD=Z as IMyLargeTurretBase;double bE=(double)bD.Azimuth;double bF=(double)bD.Elevation;R=Vector3D.Normalize(cv(bE,
+bF,Z));S=R.Cross(bD.WorldMatrix.Down);T=R.Cross(S);}else{R=Z.WorldMatrix.Forward;S=Z.WorldMatrix.Left;
+T=Z.WorldMatrix.Up;}U=Z.GetPosition()+p*S+o*T;}V=ba.GetPosition();bq=Vector3D.Distance(U,V);if(t){cz(bq);
+}if(s){cB(bq);}if(bq>bx){Echo("Out of range");be=true;}Vector3D bX=ba.WorldMatrix.Forward;Vector3D bY
+=ba.WorldMatrix.Left;Vector3D bZ=ba.WorldMatrix.Up;var ca=V-U;double cb=cT(R,ca)*bz;var cc=cM(ca,R);
+double cd=Vector3D.DistanceSquared(cc,ca);double ce=0;double cf=0;bh=false;Y=ba.GetNaturalGravity();
+double cg=Y.LengthSquared();if(cg!=0){if(Y.Dot(bZ)<0){ce=Math.PI/2-Math.Acos(MathHelper.Clamp(Y.Dot(bY)
+/Y.Length(),-1,1));}else{ce=Math.PI+Math.Acos(MathHelper.Clamp(Y.Dot(bY)/Y.Length(),-1,1));}cf=ce;bh
+=true;}else{if(bl)cf=q*Math.PI/30;}var ch=ba.GetShipSpeed();double ci;if(cb<90){ci=cc.Length()+Math.Max(2
+*ch,200);X=U+ci*R;if(!bf)bf=true;}else if(bf){int cj=Math.Sign(ca.Dot(S));int ck=Math.Sign(ca.Dot(T));
+ci=-cc.Length()+Math.Max(2*ch,200);X=U+ci*R+cj*50*S+ck*50*T;}else{ci=-cc.Length()+Math.Max(2*ch,200);
+X=U+ci*R;}var cl=X-V;var cm=ba.GetShipVelocities().LinearVelocity;if(bk){W=cr(cl,cm,i);}else{W=cr(cl,
+cm,false);}if(bl&&j){W=dq(W,R,T);}double cn;double co;cW(W,bX,bY,bZ,out cn,out co);double cp=bw.ep(cn);
+double cq=bv.ep(co);df(cq,cp,cf,F,ba);if(be){cF(cb,cd);}}Vector3D cr(Vector3D targetVec,Vector3D ct,
+bool cu){if(!cu){return targetVec;}if(ct.LengthSquared()<100){return targetVec;}if(targetVec.Dot(ct)
+>0){return cO(ct,targetVec,5);}else{return-ct;}}Vector3D cv(double az,double el,IMyTerminalBlock cw)
+{el=el%(2*Math.PI);az=az%(2*Math.PI);if(az!=Math.Abs(az)){az=2*Math.PI+az;}int cx=1;if(az>Math.PI/2&&
+az<Math.PI){az=Math.PI-(az%Math.PI);cx=-1;}else if(az>Math.PI&&az<Math.PI*3/2){az=2*Math.PI-(az%Math.PI);
+cx=-1;}double x;double y;double z;if(el==Math.PI/2){x=0;y=0;z=1;}else if(az==Math.PI/2){x=0;y=1;z=y*
+Math.Tan(el);}else{x=1*cx;y=Math.Tan(az);double cy=Math.Sqrt(1+y*y);z=cy*Math.Tan(el);}return cw.WorldMatrix.Forward
+*x+cw.WorldMatrix.Left*y+cw.WorldMatrix.Up*z;}void cz(double cA){foreach(IMyRadioAntenna thisAntenna
+in M){thisAntenna.SetValue<bool>("EnableBroadCast",true);thisAntenna.SetValue("Radius",(float)cA+100f);
+}}void cB(double cA){foreach(IMyBeacon thisBeacon in N){thisBeacon.SetValue("Radius",(float)cA+100f);
+}}void cC(bool turnOn){foreach(IMyThrust thisThrust in x){if(turnOn){thisThrust.ApplyAction("OnOff_On");
+}else{thisThrust.ApplyAction("OnOff_Off");}}}void cE(){foreach(IMyThrust thisThrust in w){thisThrust.ApplyAction("OnOff_On");
+thisThrust.SetValue("Override",float.MaxValue);}}void cF(double angleOfDeviation,double cH){if(j)j=false;
+if(bs>=br||bu>=bA){for(int i=0;i<F.Count;i++){var cI=F[i]as IMyGyro;if(cI!=null){cI.SetValue("Yaw",0f);
+cI.SetValue("Pitch",0f);cI.SetValue("Roll",0f);cI.SetValue("Override",true);}}dO();for(int i=0;i<B.Count;
+i++){var cJ=B[i]as IMyBatteryBlock;if(cJ!=null){cJ.ApplyAction("OnOff_Off");}}for(int i=0;i<L.Count;
+i++){var cK=L[i]as IMyReactor;if(cK!=null){cK.ApplyAction("OnOff_Off");}}if(!bh){for(int i=0;i<w.Count;
+i++){var cL=w[i]as IMyThrust;if(cL!=null)cL.ApplyAction("OnOff_Off");}for(int i=0;i<x.Count;i++){var
+cL=x[i]as IMyThrust;if(cL!=null)cL.ApplyAction("OnOff_Off");}}for(int i=0;i<I.Count;i++){var bN=I[i]
+as IMyTerminalBlock;if(bN!=null){if(!(bN is IMyRemoteControl)||!(bN is IMyProgrammableBlock))bN.ApplyAction("OnOff_Off");
+}}}if(angleOfDeviation<5&&cH<1){bs+=bt;}else{bs=0;}}Vector3D cM(Vector3D a,Vector3D b){Vector3D cN=a.Dot(b)
+/b.LengthSquared()*b;return cN;}Vector3D cO(Vector3D a,Vector3D b,double cP=1){Vector3D cQ=cM(a,b);Vector3D
+cR=a-cQ;Vector3D cS=cQ-cR*cP;return cS;}double cT(Vector3D a,Vector3D b){if(Vector3D.IsZero(a)||Vector3D.IsZero(b))
+return 0;else return Math.Acos(MathHelper.Clamp(a.Dot(b)/Math.Sqrt(a.LengthSquared()*b.LengthSquared()),
+-1,1));}bool cU(Vector3D a,Vector3D b){double cV=a.Dot(b);if(cV>0){return true;}else{return false;}}
+void cW(Vector3D cX,Vector3D cY,Vector3D cZ,Vector3D da,out double db,out double dc){var dd=cM(cX,da);
+var de=cX-dd;db=cT(cY,de);dc=cT(cX,de);db=-1*Math.Sign(cZ.Dot(cX))*db;dc=Math.Sign(da.Dot(cX))*dc;if
+(dc==0&&db==0&&cX.Dot(cY)<0){db=Math.PI;}}void df(double dg,double dh,double di,List<IMyTerminalBlock>
+dj,IMyTerminalBlock cw){var dk=new Vector3D(-dg,dh,di);var dl=cw.WorldMatrix;var dm=Vector3D.TransformNormal(dk,
+dl);foreach(IMyGyro thisGyro in dj){var dn=thisGyro.WorldMatrix;var@do=Vector3D.TransformNormal(dm,Matrix.Transpose(dn));
+thisGyro.Pitch=(float)@do.X;thisGyro.Yaw=(float)@do.Y;thisGyro.Roll=(float)@do.Z;thisGyro.GyroOverride
+=true;}}double dp=0;Vector3D dq(Vector3D cX,Vector3D cY,Vector3D da){double dr=Math.Tan(k*by);Vector3D
+ds=Vector3D.Normalize(cX);if(dp>l)dp=0;double dt=2*Math.PI*dp/l;if(cY.Dot(ds)>0){Vector3D du=Vector3D.Normalize(da.Cross(ds));
+Vector3D dv=Vector3D.Normalize(du.Cross(ds));Vector3D dw=ds+dr*(du*Math.Cos(dt)+dv*Math.Sin(dt));return
+dw;}else{return ds;}}Dictionary<string,string>dx=new Dictionary<string,string>();void dy(IMyTerminalBlock
+bH){dx.Clear();dx.Add("missileTag",a.ToString());dx.Add("detachThrustTag",b.ToString());dx.Add("shooterReferenceName",
+c.ToString());dx.Add("updatesPerSecond",d.ToString());dx.Add("disconnectDelay",e.ToString());dx.Add("guidanceDelay",
+f.ToString());dx.Add("detachDuration",g.ToString());dx.Add("mainIgnitionDelay",h.ToString());dx.Add("driftCompensation",
+i.ToString());dx.Add("enableSpiralTrajectory",j.ToString());dx.Add("spiralDegrees",k.ToString());dx.Add("timeMaxSpiral",
+l.ToString());dx.Add("proportionalConstant",m.ToString());dx.Add("derivativeConstant",n.ToString());
+dx.Add("offsetUp",o.ToString());dx.Add("offsetLeft",p.ToString());dx.Add("missileSpinRPM",q.ToString());
+dx.Add("lockVectorOnLaunch",r.ToString());dx.Add("antennasOn",t.ToString());dx.Add("beaconsOn",s.ToString());
+dz(bH,true);}void dz(IMyTerminalBlock block,bool dA=false){string dB=block.CustomData;var dC=dB.Split('\n');
+foreach(var thisLine in dC){var dD=thisLine.Split('=');if(dD.Length==2){var dE=dD[0].Trim();var dF=dD[1].Trim();
+string dG;if(dx.TryGetValue(dE,out dG)){dx[dE]=dF;}}}dJ("missileTag",ref a);dJ("detachThrustTag",ref
+b);dJ("shooterReferenceName",ref c);dJ("updatesPerSecond",ref d);dJ("disconnectDelay",ref e);dJ("guidanceDelay",
+ref f);dJ("detachDuration",ref g);dJ("mainIgnitionDelay",ref h);dJ("driftCompensation",ref i);dJ("enableSpiralTrajectory",
+ref j);dJ("spiralDegrees",ref k);dJ("timeMaxSpiral",ref l);dJ("proportionalConstant",ref m);dJ("derivativeConstant",
+ref n);dJ("offsetUp",ref o);dJ("offsetLeft",ref p);dJ("missileSpinRPM",ref q);dJ("lockVectorOnLaunch",
+ref r);dJ("antennasOn",ref t);dJ("beaconsOn",ref s);dI(block);if(dA)Echo("Config Loaded");else Echo("Config Updated");
+}StringBuilder dH=new StringBuilder();void dI(IMyTerminalBlock bH){dH.Clear();foreach(var keyValue in
+dx){dH.AppendLine($"{keyValue.Key} = {keyValue.Value}");}bH.CustomData=dH.ToString();}void dJ(string
+name,ref bool variableToUpdate){string valueStr;if(dx.TryGetValue(name,out valueStr)){bool dN;if(bool.TryParse(valueStr,
+out dN)){variableToUpdate=dN;}}}void dJ(string dK,ref int dL){string dM;if(dx.TryGetValue(dK,out dM))
+{int dN;if(int.TryParse(dM,out dN)){dL=dN;}}}void dJ(string dK,ref float dL){string dM;if(dx.TryGetValue(dK,
+out dM)){float dN;if(float.TryParse(dM,out dN)){dL=dN;}}}void dJ(string name,ref double variableToUpdate)
+{string valueStr;if(dx.TryGetValue(name,out valueStr)){double thisValue;if(double.TryParse(valueStr,
+out thisValue)){variableToUpdate=thisValue;}}}void dJ(string name,ref string variableToUpdate){string
+dM;if(dx.TryGetValue(name,out dM)){variableToUpdate=dM;}}void dO(){var P=new List<IMyWarhead>();GridTerminalSystem.GetBlocksOfType<IMyWarhead>(P);
+foreach(IMyWarhead thisWarhead in P){thisWarhead.SetValue<bool>("Safety",true);if(thisWarhead.CustomName.ToLower().Contains("start"))
+thisWarhead.ApplyAction("StartCountdown");else thisWarhead.ApplyAction("Detonate");}}void dP(){var G
+=new List<IMyTimerBlock>();GridTerminalSystem.GetBlocksOfType(G,bH=>bH.CustomName.Contains(bm));foreach
+(IMyTimerBlock thisTimer in G){thisTimer.ApplyAction("TriggerNow");}}void dQ(){foreach(IMyCameraBlock
+thisCamera in Q){var dR=thisCamera.Raycast(bn);if(dR.IsEmpty()){Echo("No target detected");continue;
+}else if(bo&&dR.Type.ToString()=="Planet"){Echo("Planet detected\nIgnoring...");continue;}else if(bp
+&&(dR.Relationship==MyRelationsBetweenPlayerAndBlock.FactionShare||dR.Relationship==MyRelationsBetweenPlayerAndBlock.Owner))
+{Echo("Friendly detected\nIgnoring...");continue;}else{Echo("Target detected");dO();dP();return;}}}int
+dS=1;int dT=30;StringBuilder dU=new StringBuilder();void dV(){if(dS<=dT*1){double dW=Runtime.LastRunTimeMs;
+dU.Append(dW.ToString()).Append("\n");dS++;}else{var dX=GridTerminalSystem.GetBlockWithName("DEBUG")
+as IMyTextPanel;dX?.WritePublicText(dU.ToString());dX?.ShowPublicTextOnScreen();}}public class dY{double
+dZ=0;double ea=0;double eb=0;double ec=0;double ed=0;double ee=0;double ef=0;double eg=0;double eh=0;
+bool ei=true;bool ej=false;public double ek{get;private set;}public dY(double kP,double kI,double kD,
+double el,double em,double en){dZ=kP;ea=kI;eb=kD;ed=el;ee=em;ef=en;ej=false;}public dY(double kP,double
+kI,double kD,double eo,double en){dZ=kP;ea=kI;eb=kD;ef=en;ec=eo;ej=true;}public double ep(double eq)
+{var er=(eq-eh)/ef;if(ei){er=0;ei=false;}if(!ej){eg+=eq*ef;if(eg>ee)eg=ee;else if(eg<ed)eg=ed;}else{
+eg=eg*(1.0-ec)+eq*ef;}eh=eq;this.ek=dZ*eq+ea*eg+eb*er;return this.ek;}public void es(){eg=0;eh=0;ei=
+true;}}
